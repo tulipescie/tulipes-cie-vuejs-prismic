@@ -1,5 +1,9 @@
 <template>
   <div id="app">
+    <navigation/>
+
+    <br>
+
     <router-view/>
     <footer-prismic/>
   </div>
@@ -7,11 +11,13 @@
 
 <script>
 import FooterPrismic from './components/FooterPrismic.vue'
+import Navigation from './components/Navigation.vue'
 
 export default {
   name: 'App',
   components: {
-    FooterPrismic
+    FooterPrismic,
+    Navigation
   }
 }
 </script>
