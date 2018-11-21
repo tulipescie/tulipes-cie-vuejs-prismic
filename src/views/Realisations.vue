@@ -8,24 +8,50 @@
 
     <u>FILTRES</u>
 
-    <li v-for="(client, index) in clientList" 
+    <br><br>
+
+    <button v-for="(client, index) in clientList" 
     :key="'client-item-' + index"
     v-on:click="filterClients(client)">
       {{ client }}
-    </li>
+    </button>
 
     <br>
 
-     <li v-for="(secteur, index) in secteurList" 
+     <button v-for="(secteur, index) in secteurList" 
      :key="'secteur-item-' + index"
      v-on:click="filterSecteurs(secteur)">
       {{ secteur }}
-    </li>
+    </button>
 
     <br>
 
-    <button v-on:click="reverseOrder">Inverser l'ordre</button><br>
-    <button v-on:click="filterBy($prismic.richTextAsPlain(fields.realisations_title))">Filtrer</button><br>
+    <button v-for="(thematique, index) in thematiqueList" 
+    :key="'thematique-item-' + index"
+    v-on:click="filterThematiques(thematique)">
+      {{ thematique }}
+    </button>
+
+    <br>
+
+    <button v-for="(format, index) in formatList" 
+    :key="'format-item-' + index"
+    v-on:click="filterFormats(format)">
+      {{ format }}
+    </button>
+
+    <br>
+
+    <button v-for="(realisateur, index) in realisateurList" 
+    :key="'realisateur-item-' + index"
+    v-on:click="filterRealisateurs(realisateur)">
+      {{ realisateur }}
+    </button>
+
+    <br><br>
+
+    <button @:click="reverseOrder">Inverser l'ordre</button><br>
+    <button @:click="deleteFilters">Reinitialiser les filtres</button><br>
 
     <br><br>
 
@@ -34,8 +60,12 @@
     <br><br>
 
     <ul>
-      <li v-for="(item, index) in projectsDisplayed" :key="'projet-item-' + index">
-        <div v-if="item.isVisible">
+      <li v-for="(item, index) in projectsDisplayed" 
+      :key="'projet-item-' + index" 
+      v-bind:disabled="item.isVisible">
+      <!-- <li v-for="(item, index) in projectsDisplayed" :key="'projet-item-' + index" 
+      v-if="item.isVisible"> -->
+        <div>
           <router-link :to="`/realisations/${item.uid}`">
           <div>
             <!-- {{ item }}<br><br> -->
@@ -66,7 +96,10 @@ export default {
       projects: [],
       projectsDisplayed: [],
       secteurList: [],
-      clientList: []
+      clientList: [],
+      thematiqueList: [],
+      formatList: [],
+      realisateurList: []
     };
   },
   methods: {
@@ -96,65 +129,145 @@ export default {
       });
     },
     filterClients(e) {
-    // on compare tous les projets
+      let compare = function(element) {
+        return element.projet_client === e;
+      };
       this.projectsDisplayed.forEach(document => {
-        document.data.projet_client_group.forEach(element => {
-          if (element.projet_client === e) {
-            console.log('oui');
+        let array = document.data.projet_client_group;
+          if (array.length < 1) {
+            document.isVisible = false;
           } else {
-            console.log('non')
+            if (document.data.projet_client_group.some(compare)) {
+                document.isVisible = true;
+              } else {
+                document.isVisible = false;
+              }
           }
-        });
       },);
     },
     filterSecteurs(e) {
-    // on compare tous les projets
+      let compare = function(element) {
+        return element.projet_secteur === e;
+      };
       this.projectsDisplayed.forEach(document => {
-        document.data.projet_secteurs_group.forEach(element => {
-          if (element.projet_secteur === e) {
-            console.log('oui');
+        let array = document.data.projet_secteur_group;
+          if (array.length < 1) {
+            document.isVisible = false;
           } else {
-            console.log('non')
+            if (document.data.projet_secteur_group.some(compare)) {
+                document.isVisible = true;
+              } else {
+                document.isVisible = false;
+              }
           }
-        });
       },);
     },
-
-    setActive(projet) {
-      console.log(projet)
+    filterThematiques(e) {
+    let compare = function(element) {
+        return element.projet_thematique === e;
+      };
+      this.projectsDisplayed.forEach(document => {
+        let array = document.data.projet_thematique_group;
+          if (array.length < 1) {
+            document.isVisible = false;
+          } else {
+            if (document.data.projet_thematique_group.some(compare)) {
+                document.isVisible = true;
+              } else {
+                document.isVisible = false;
+              }
+          }
+      },);
     },
-    
-    reverseOrder () {
-      this.projectsDisplayed.reverse()
+    filterFormats(e) {
+    let compare = function(element) {
+        return element.projet_format === e;
+      };
+      this.projectsDisplayed.forEach(document => {
+        let array = document.data.projet_format_group;
+          if (array.length < 1) {
+            document.isVisible = false;
+          } else {
+            if (document.data.projet_format_group.some(compare)) {
+                document.isVisible = true;
+              } else {
+                document.isVisible = false;
+              }
+          }
+      },);
+    },
+    filterRealisateurs(e) {
+    let compare = function(element) {
+        return element.projet_realisateur === e;
+      };
+      this.projectsDisplayed.forEach(document => {
+        let array = document.data.projet_realisateur_group;
+          if (array.length < 1) {
+            document.isVisible = false;
+          } else {
+            if (document.data.projet_realisateur_group.some(compare)) {
+                document.isVisible = true;
+              } else {
+                document.isVisible = false;
+              }
+          }
+      });
     },
     initFilters() {
       this.$prismic.client.query(
       this.$prismic.Predicates.at('document.type', 'projet'),
       // récupère le document avec juste la valeur 
-      { fetch : ['projet.projet_client_group', 'projet.projet_secteurs_group']}
+      { fetch : [
+      'projet.projet_client_group', 
+      'projet.projet_secteur_group',
+      'projet.projet_format_group',
+      'projet.projet_thematique_group',
+      'projet.projet_realisateur_group'
+      ]}
 
       // récupère tout le document 
       // { fetchLinks : 'projet.projet_title' }
       ).then((response) => {
         response.results.forEach(element => {
+          // console.log(element)
           element.data.projet_client_group.forEach(element => {
             if (this.clientList.includes(element.projet_client) == false) {
               this.clientList.push(element.projet_client)
             }
           });
-          element.data.projet_secteurs_group.forEach(element => {
-            console.log(this.secteurList.includes(element.projet_secteur))
+          element.data.projet_secteur_group.forEach(element => {
             if (this.secteurList.includes(element.projet_secteur) == false) {
               this.secteurList.push(element.projet_secteur)
             }
-            console.log(this.secteurList)
+          });
+          element.data.projet_thematique_group.forEach(element => {
+            if (this.thematiqueList.includes(element.projet_thematique) == false) {
+              this.thematiqueList.push(element.projet_thematique)
+            }
+          });
+          element.data.projet_format_group.forEach(element => {
+            if (this.formatList.includes(element.projet_format) == false) {
+              this.formatList.push(element.projet_format)
+            }
+          });
+          element.data.projet_realisateur_group.forEach(element => {
+            if (this.realisateurList.includes(element.projet_realisateur) == false) {
+              this.realisateurList.push(element.projet_realisateur)
+            }
           });
 
         });
       });
     },
+    deleteFilters () {
+      this.projectsDisplayed.forEach(element => {
+        element.isVisible = true;
+      });
+    },
+    reverseOrder () {
+      this.projectsDisplayed.reverse()
+    },
     filterBy () {
-      console.log('console')
     },
 
     updateProjectsDisplayed() {
@@ -183,6 +296,9 @@ export default {
   },
   created () {
     this.getContent();
+  },
+  destroyed () {
+    console.log('destroyed')
   }
 }
 </script>
